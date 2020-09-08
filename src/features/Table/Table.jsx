@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import parseLinkHeader from 'parse-link-header'
+import { useHistory } from 'react-router-dom'
 import Axios from 'axios'
-
+import parseLinkHeader from 'parse-link-header'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Table as MUITable,
@@ -13,10 +13,12 @@ import {
   TableRow,
   Paper,
   Button,
+  Card
 } from '@material-ui/core'
-
-import { validateTableData } from '../../utils/tableUtils'
+import Spinner from '../Spinner/Spinner'
 import actions from '../../actions'
+import { isTableDataValid } from '../../utils/appUtils'
+
 
 const AVATAR_SIZE = 50
 const ROW_HEIGHT = AVATAR_SIZE + 10
@@ -26,6 +28,7 @@ const useStyles = makeStyles({
     overflow: 'hidden'
   },
   tableRow: {
+    position: 'relative',
     display: 'flex',
     height: ROW_HEIGHT,
     width: '100%',
@@ -59,7 +62,7 @@ const useStyles = makeStyles({
     transition: 'all 0.2s',
     '&:hover': {
       transition: 'all 0.2s',
-      backgroundColor: 'rgba(0, 0, 0, .2)', // colors.avatarHighlight,
+      backgroundColor: 'rgba(0, 0, 0, .2)',
       padding: '3px',      
     }
   },
@@ -71,41 +74,39 @@ const useStyles = makeStyles({
   pageIndicator: {
     pointerEvents: 'none',
     whiteSpace: 'nowrap'
-  }
+  },
 })
 
 const Table = () => {
+  // hooks
   const classes = useStyles()
   const dispatch = useDispatch()
-
+  const history = useHistory()
   // actions
   const dispatchStorePage = (pageNumber, data, headerLinks) => dispatch(actions.app.storePage(pageNumber, data, headerLinks))
   const dispatchSetCurrentPageNumber = (pageNumber) => dispatch(actions.app.setCurrentPageNumber(pageNumber))
-
   // selectors
-  const { currentPageNumber, pages, paginationLinks } = useSelector(state => state.app)
+  const { currentPageNumber = 1, pages, paginationLinks } = useSelector(state => state.app)
   const currentPageData = pages[currentPageNumber]
   const numberOfStoredPages = Object.keys(pages).length
   
 
   const fetchUsers = (url, pageNumber) => {
-    Axios.get(url)
-      .then((response) => {
-        const { data, headers: { link } } = response
-        dispatchStorePage(pageNumber, data, parseLinkHeader(link))
-      })
-      .catch((error) => console.error('fetchUsers: error', error))
+    Axios.get(url).then((response) => {
+      const { data, headers: { link } } = response
+      dispatchStorePage(pageNumber, data, parseLinkHeader(link))
+    })
   }
 
   useEffect(() => {
-    if (pageIsStored(1)) goToStoredPage(currentPageNumber || 1)
+    if (pageIsStored(currentPageNumber)) goToStoredPage(currentPageNumber)
     else fetchUsers('https://api.github.com/users?per_page=5', 1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getListHeader = () => (
     <TableHead key='table-header'>
-      <TableRow className={classes.tableRow}>
+      <TableRow className={classes.tableRow} >
         <TableCell className={classes.avatarCell}>Avatar</TableCell>
         <TableCell className={classes.loginCell}>Login</TableCell>
       </TableRow>
@@ -116,10 +117,11 @@ const Table = () => {
     return (
       <TableBody key='table-body'>
         {
-          validateTableData(currentPageData) && currentPageData.map((row) => (
+          isTableDataValid(currentPageData) &&
+           currentPageData.map((row) => (
             <TableRow key={ row.login } className={classes.tableRow}>
               <TableCell className={`${classes.tableCell} ${classes.avatarCell}`} component="th" scope="row">
-                <img className={classes.avatar} src={row.avatar_url} alt='avatar' />
+                <img className={classes.avatar} src={row.avatar_url} alt='avatar' onClick={() => showUserDetails(row.login)} />
               </TableCell>
               <TableCell className={`${classes.tableCell} ${classes.loginCell}`}>
                 { row.login }
@@ -129,6 +131,12 @@ const Table = () => {
         }
       </TableBody>
     )
+  }
+
+  const showUserDetails = (login) => {
+    if (typeof login !== 'string') {
+      console.error(`showUserDetails: Error, invalid argument data type {${typeof login}}`)
+    } else history.push(`/${login}`)
   }
 
   const pageIsStored = (pageNumber) => Boolean(numberOfStoredPages >= pageNumber)
@@ -141,7 +149,6 @@ const Table = () => {
   }
 
   const goToLastPage = () => {
-    // github users api doesn't seem to provide headerLink for the last page
     fetchUsers(paginationLinks.last.url)
   }
 
@@ -167,6 +174,7 @@ const Table = () => {
         { getListRows() }
       </MUITable>
       { getNavigation() }
+      { !isTableDataValid(currentPageData) && <Card className={classes.tableRow}><Spinner size={50} /></Card> }
     </TableContainer>
   )
 }

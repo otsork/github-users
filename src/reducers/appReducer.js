@@ -1,20 +1,23 @@
 
 /*
-  appReducer.js was initially named tableReducer.js,
-  since the app is small I figured that its not a crime to have everything in a single reducer file
+  I intended to have multiple reducers, since the app is small
+  I figured that its not a crime to have everything in a single file
 */
-import { STORE_PAGE, SET_CURRENT_PAGE, OPEN_USER_DETAILS } from '../actions/appActions'
+import { STORE_PAGE, SET_CURRENT_PAGE, SET_USER_DETAILS } from '../actions/appActions'
 
 const initialState = {
   pages: {},
+  userDetails: {},
   currentPageNumber: 1,
   paginationLinks: {}
 }
 
 const appReducer = (state = initialState, action) => {
+  const { payload } = action
+
   switch(action.type) {
     case STORE_PAGE: {
-      const { payload: { pageNumber, data, paginationLinks } } = action
+      const { pageNumber, data, paginationLinks } = payload
 
       return {
         ...state,
@@ -28,7 +31,7 @@ const appReducer = (state = initialState, action) => {
     }
   
     case SET_CURRENT_PAGE: {
-      const { payload: { pageNumber } } = action
+      const { pageNumber } = payload
 
       return {
         ...state,
@@ -36,11 +39,12 @@ const appReducer = (state = initialState, action) => {
       }
     }
 
-    case OPEN_USER_DETAILS: {
-      // const { payload } = action
+    case SET_USER_DETAILS: {
+      const { userDetails } = payload
 
       return {
         ...state,
+        userDetails
       }
     }
 

@@ -13,11 +13,8 @@ export const loadState = () => {
 
 export const saveState = (state) => {
   try {
-    console.log('SAVING STATE')
     const serializedState = JSON.stringify(state)
-    console.log('saved state', state)
     sessionStorage.setItem('state', serializedState)
-    console.log(loadState())
   } catch (err) {
     console.warning('saveState: Saving state failed', err)
   }

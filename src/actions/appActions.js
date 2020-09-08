@@ -1,6 +1,6 @@
 /*
-  appActions.js was initially named tableActions.js,
-  since the app is small I figured that its not a crime to have everything in a single actions file
+  I intended to have multiple action files, but since the app is small
+  I figured that its not a crime to have everything in a single file
 */
 export const STORE_PAGE = 'STORE_PAGE'
 const storePage = (pageNumber, data, paginationLinks) => ({
@@ -14,14 +14,14 @@ const setCurrentPageNumber = (pageNumber) => ({
   payload: { pageNumber }
 })
 
-export const OPEN_USER_DETAILS = 'OPEN_USER_DETAILS'
-const openUserDetails = (userData) => ({
-  type: OPEN_USER_DETAILS,
-  payload: { userData }
+export const SET_USER_DETAILS = 'SET_USER_DETAILS'
+const setUserDetails = (userDetails) => ({
+  type: SET_USER_DETAILS,
+  payload: { userDetails }
 })
 
 export default {
   storePage,
   setCurrentPageNumber,
-  openUserDetails
+  setUserDetails
 }
