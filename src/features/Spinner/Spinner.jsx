@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => {
 
 const Spinner = (props) => {
   const classes = useStyles()
-  const { size } = props
+  const { size = 20 } = props
 
   const offset = `calc(50% - ${size / 2}px)`
   const style = {

@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import Axios from 'axios'
-import parseLinkHeader from 'parse-link-header'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Table as MUITable,
@@ -17,7 +15,8 @@ import {
 } from '@material-ui/core'
 import Spinner from '../Spinner/Spinner'
 import actions from '../../actions'
-import { isTableDataValid } from '../../utils/appUtils'
+import { isTableDataValid } from '../../utils/validationUtils'
+import { fetchTableData } from '../../requests/requests'
 
 
 const AVATAR_SIZE = 50
@@ -28,10 +27,11 @@ const useStyles = makeStyles({
     overflow: 'hidden'
   },
   tableRow: {
-    position: 'relative',
     display: 'flex',
     height: ROW_HEIGHT,
     width: '100%',
+  },
+  tableContentRow: {
     '&:hover': {
       backgroundColor: 'rgba(0, 0, 0, .04)'
     }
@@ -89,18 +89,10 @@ const Table = () => {
   const { currentPageNumber = 1, pages, paginationLinks } = useSelector(state => state.app)
   const currentPageData = pages[currentPageNumber]
   const numberOfStoredPages = Object.keys(pages).length
-  
-
-  const fetchUsers = (url, pageNumber) => {
-    Axios.get(url).then((response) => {
-      const { data, headers: { link } } = response
-      dispatchStorePage(pageNumber, data, parseLinkHeader(link))
-    })
-  }
 
   useEffect(() => {
     if (pageIsStored(currentPageNumber)) goToStoredPage(currentPageNumber)
-    else fetchUsers('https://api.github.com/users?per_page=5', 1)
+    else fetchTableData('https://api.github.com/users?per_page=5', 1, dispatchStorePage)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -114,14 +106,15 @@ const Table = () => {
   )
 
   const getListRows = () => {
+    const shouldTableRowsRender = isTableDataValid(currentPageData) && pageIsStored(currentPageNumber)
     return (
       <TableBody key='table-body'>
         {
-          isTableDataValid(currentPageData) &&
-           currentPageData.map((row) => (
-            <TableRow key={ row.login } className={classes.tableRow}>
+          shouldTableRowsRender &&
+          currentPageData.map((row) => (
+            <TableRow key={ row.login } className={`${classes.tableRow} ${classes.tableContentRow}`}>
               <TableCell className={`${classes.tableCell} ${classes.avatarCell}`} component="th" scope="row">
-                <img className={classes.avatar} src={row.avatar_url} alt='avatar' onClick={() => showUserDetails(row.login)} />
+                <img className={classes.avatar} src={row.avatar_url} alt='avatar' onClick={() => openUserDetails(row.login)} />
               </TableCell>
               <TableCell className={`${classes.tableCell} ${classes.loginCell}`}>
                 { row.login }
@@ -133,9 +126,9 @@ const Table = () => {
     )
   }
 
-  const showUserDetails = (login) => {
+  const openUserDetails = (login) => {
     if (typeof login !== 'string') {
-      console.error(`showUserDetails: Error, invalid argument data type {${typeof login}}`)
+      console.error(`openUserDetails: Error, invalid argument data type {${typeof login}}`)
     } else history.push(`/${login}`)
   }
 
@@ -145,11 +138,11 @@ const Table = () => {
 
   const goToNextPage = (pageNumber) => {
     if (pageIsStored(pageNumber)) goToStoredPage(pageNumber)
-    else fetchUsers(paginationLinks.next.url, pageNumber)
+    else fetchTableData(paginationLinks.next.url, pageNumber, dispatchStorePage)
   }
 
   const goToLastPage = () => {
-    fetchUsers(paginationLinks.last.url)
+    fetchTableData(paginationLinks.last.url, undefined, dispatchStorePage)
   }
 
   const getNavigation = () => {
@@ -157,7 +150,7 @@ const Table = () => {
     const page = currentPageNumber
 
     return (
-      <div className={classes.navigationWrapper}>
+      <div id='navigationWrapper' className={classes.navigationWrapper}>
         <Button disabled={page === 1} onClick={() => goToStoredPage(1)}>First</Button>
         <Button disabled={page === 1} onClick={() => goToStoredPage(page - 1)}>Prev</Button>
         <Button className={classes.pageIndicator}>page: {page}</Button>

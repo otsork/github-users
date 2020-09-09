@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import Axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
@@ -12,7 +11,9 @@ import {
 } from '@material-ui/core'
 import Spinner from '../Spinner/Spinner'
 import actions from '../../actions'
-import { isUserDetailsValid } from '../../utils/appUtils'
+
+import { isUserDetailsValid } from '../../utils/validationUtils'
+import { fetchUserData } from '../../requests/requests'
 
 
 const useStyles = makeStyles({
@@ -58,12 +59,6 @@ const useStyles = makeStyles({
   },
 })
 
-const NO_USER = {
-  avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
-  login: 'john_doe',
-  name: 'John Doe'
-}
-
 const UserDetails = () => {
   // hooks
   const classes = useStyles()
@@ -76,25 +71,16 @@ const UserDetails = () => {
   // selectors
   const user = useSelector(state => state.app.userDetails)
 
-  const fetchUserData = (userName) => {
-    Axios.get(`https://api.github.com/users/${userName}`).then((response) => {
-      const { data } = response
-      if (isUserDetailsValid(data)) dispatchSetUserDetails(data)
-      else dispatchSetUserDetails(NO_USER)
-    }).catch(() => { dispatchSetUserDetails(NO_USER) })
-  }
-
-  const browserPath = window.location.pathname.substring(1)
-  const pathDoesNotMatchDetails = (user.login !== browserPath)
-
   useEffect(() => {
-    if (!isUserDetailsValid(user) || pathDoesNotMatchDetails) {
-      fetchUserData(browserPath)
+    if (!isUserDetailsValid(user) || !pathAndLoginMatch(browserPath, user.login)) {
+      fetchUserData(browserPath, dispatchSetUserDetails)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const loading = !isUserDetailsValid || pathDoesNotMatchDetails
+  const pathAndLoginMatch = (path, login) => (path === login)  
+  const browserPath = window.location.pathname.substring(1)
+  const loading = !isUserDetailsValid(user) || !pathAndLoginMatch(browserPath, user.login)
 
   return (
     loading ? <Spinner size={80} /> :
