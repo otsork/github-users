@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
+
 import {
   Table as MUITable,
   TableBody,
@@ -10,10 +11,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
   Card
 } from '@material-ui/core'
 import Spinner from '../Spinner/Spinner'
+import Navigation from '../Navigation/Navigation'
+
 import actions from '../../actions'
 import { isTableDataValid } from '../../utils/validationUtils'
 import { fetchTableData } from '../../requests/requests'
@@ -39,7 +41,6 @@ const useStyles = makeStyles({
   tableCell: {
     display: 'flex',
     alignItems: 'center',
-    
   },
   loginCell: {
     display: 'flex',
@@ -65,11 +66,6 @@ const useStyles = makeStyles({
       backgroundColor: 'rgba(0, 0, 0, .2)',
       padding: '3px',      
     }
-  },
-  navigationWrapper: {
-    display: 'flex',
-    width: '100%',
-    justifyContent: 'space-between'
   },
   pageIndicator: {
     pointerEvents: 'none',
@@ -136,37 +132,18 @@ const Table = () => {
 
   const goToStoredPage = (pageNumber) => { dispatchSetCurrentPageNumber(pageNumber) }
 
-  const goToNextPage = (pageNumber) => {
-    if (pageIsStored(pageNumber)) goToStoredPage(pageNumber)
-    else fetchTableData(paginationLinks.next.url, pageNumber, dispatchStorePage)
-  }
-
-  const goToLastPage = () => {
-    fetchTableData(paginationLinks.last.url, undefined, dispatchStorePage)
-  }
-
-  const getNavigation = () => {
-    const { next, last } = paginationLinks
-    const page = currentPageNumber
-
-    return (
-      <div id='navigationWrapper' className={classes.navigationWrapper}>
-        <Button disabled={page === 1} onClick={() => goToStoredPage(1)}>First</Button>
-        <Button disabled={page === 1} onClick={() => goToStoredPage(page - 1)}>Prev</Button>
-        <Button className={classes.pageIndicator}>page: {page}</Button>
-        <Button disabled={!next} onClick={() => goToNextPage(page + 1, next.rel)}>Next</Button>
-        <Button disabled={!last} onClick={() => goToLastPage()}>Last</Button>        
-      </div>
-    )
-  }
-
   return (
     <TableContainer component={Paper}>
       <MUITable className={classes.table} aria-label="github users table">
         { getListHeader() }
         { getListRows() }
       </MUITable>
-      { getNavigation() }
+      <Navigation
+        paginationLinks={paginationLinks}
+        currentPageNumber={currentPageNumber}
+        dispatchStorePage={dispatchStorePage}
+        goToStoredPage={goToStoredPage}
+        pageIsStored={pageIsStored} />
       { !isTableDataValid(currentPageData) && <Card className={classes.tableRow}><Spinner size={50} /></Card> }
     </TableContainer>
   )

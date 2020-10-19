@@ -67,7 +67,4 @@ describe('Table tests', () => {
     expect(wrapper.find(Spinner)).toHaveLength(0)
     isTableDataValidStub.restore()
   })
-  it.skip('renders john_doe if fetchTableData request fails', () => {
-    // TODO
-  })
 })

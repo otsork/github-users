@@ -10,10 +10,8 @@ export const fetchTableData = (url, pageNumber, dispatchStorePage) => {
 }
 
 export const fetchUserData = (userName, dispatchSetUserDetails) => {
-  Axios.get(`https://api.github.com/users/${userName}`).then((response) => {
-    const { data } = response
-    const userData = isUserDetailsValid(data) ? data : NO_USER
-    dispatchSetUserDetails(userData)
+  Axios.get(`https://api.github.com/users/${userName}`).then(({ data }) => {
+    dispatchSetUserDetails(isUserDetailsValid(data) ? data : NO_USER)
   }).catch(() => { dispatchSetUserDetails(NO_USER) })
 }
 
