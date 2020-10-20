@@ -42,7 +42,6 @@ const appReducer = (state = initialState, action) => {
 
     case SET_USER_DETAILS: {
       const { userDetails } = payload
-
       return {
         ...state,
         userDetails

@@ -72,18 +72,27 @@ const UserDetails = () => {
   const user = useSelector(state => state.app.userDetails)
 
   useEffect(() => {
+    const NO_USER = {
+      avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+      login: 'john_doe',
+      name: 'John Doe'
+    }
+
     if (!isUserDetailsValid(user) || !pathAndLoginMatch(browserPath, user.login)) {
-      fetchUserData(browserPath, dispatchSetUserDetails)
+      fetchUserData(browserPath, ({ data }) => {
+        dispatchSetUserDetails(isUserDetailsValid(data) ? data : NO_USER)
+      }, () => {
+        dispatchSetUserDetails(NO_USER)
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const pathAndLoginMatch = (path, login) => (path === login)  
+  const pathAndLoginMatch = (path, login) => (path === login)
   const browserPath = window.location.pathname.substring(1)
-  const loading = !isUserDetailsValid(user) || !pathAndLoginMatch(browserPath, user.login)
-
+  const isLoading = !isUserDetailsValid(user) || (!pathAndLoginMatch(browserPath, user.login) && user.login !== 'john_doe')
   return (
-    loading ? <Spinner size={80} /> :
+    isLoading ? <Spinner size={80} /> :
     <Card className={classes.card}>
       <Icon className={classes.backButton} onClick={() => { history.push('') }}>
         close

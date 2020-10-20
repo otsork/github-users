@@ -18,7 +18,7 @@ import Navigation from '../Navigation/Navigation'
 
 import actions from '../../actions'
 import { isTableDataValid } from '../../utils/validationUtils'
-import { fetchTableData2, fetchTableData } from '../../requests/requests'
+import { fetchTableData } from '../../requests/requests'
 
 
 const AVATAR_SIZE = 50

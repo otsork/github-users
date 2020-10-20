@@ -41,7 +41,7 @@ class Request {
         return { data, links: parseLinkHeader(link) }
       }
       default:
-        return response => response
+        return response
     }
   }
 
