@@ -18,7 +18,7 @@ import Navigation from '../Navigation/Navigation'
 
 import actions from '../../actions'
 import { isTableDataValid } from '../../utils/validationUtils'
-import { fetchTableData } from '../../requests/requests'
+import { fetchTableData2, fetchTableData } from '../../requests/requests'
 
 
 const AVATAR_SIZE = 50
@@ -88,7 +88,9 @@ const Table = () => {
 
   useEffect(() => {
     if (pageIsStored(currentPageNumber)) goToStoredPage(currentPageNumber)
-    else fetchTableData('https://api.github.com/users?per_page=5', 1, dispatchStorePage)
+    else fetchTableData('https://api.github.com/users?per_page=5', ({ data, links }) => {
+      dispatchStorePage(1, data, links)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

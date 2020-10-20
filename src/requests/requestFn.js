@@ -21,11 +21,12 @@ class Request {
 
     this.successCb = (response) => {
       // console.log(response)
-      // const parsedResponse = this.config.parser && this.config.parser(response)
+      const parsedResponse = this.config.parser && this.config.parser(response)
+      const _response = this.config.parser ? parsedResponse : response
       // console.log(parsedResponse)
-      if (args.successCb) args.successCb(response)
-      args.resolve(response)
-      return response
+      if (args.successCb) args.successCb(_response)
+      args.resolve(_response)
+      return _response
     }
 
     this.errorCb = (error) => {

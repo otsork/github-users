@@ -1,5 +1,5 @@
 import React from 'react'
-// import { useSelector, useDispatch } from 'react-redux'
+import parseLinkHeader from 'parse-link-header'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { Button } from '@material-ui/core'
@@ -28,16 +28,23 @@ const Navigation = (props) => {
   // hooks
   const classes = useStyles()
 
+  console.log(paginationLinks)
   const goToNextPage = (pageNumber) => {
     if (pageIsStored(pageNumber)) goToStoredPage(pageNumber)
-    else fetchTableData(paginationLinks.next.url, pageNumber, dispatchStorePage)
+    else {
+      fetchTableData(paginationLinks.next.url, (response) => {  
+        const { data, headers: { link } } = response
+        dispatchStorePage(pageNumber, data, parseLinkHeader(link))
+      })
+    }
   }
 
   const goToLastPage = () => {
     fetchTableData(paginationLinks.last.url, undefined, dispatchStorePage)
   }
 
-  const { next, last } = paginationLinks
+  console.log(paginationLinks)
+  const { next = '', last = '' } = paginationLinks || {}
   const page = currentPageNumber
 
     return (

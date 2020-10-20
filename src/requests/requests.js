@@ -1,12 +1,22 @@
 import Axios from 'axios'
-import parseLinkHeader from 'parse-link-header'
 import { isUserDetailsValid } from '../utils/validationUtils'
 
-export const fetchTableData = (url, pageNumber, dispatchStorePage) => {
+import parseLinkHeader from 'parse-link-header'
+import requestFn from './requestFn'
+
+export const fetchTableData2 = (url, pageNumber, dispatchStorePage) => {
   Axios.get(url).then((response) => {
     const { data, headers: { link } } = response
     dispatchStorePage(pageNumber, data, parseLinkHeader(link))
   })
+}
+
+export const fetchTableData = (url, successCb, errorCb) => {
+  const parser =  (_data) => {
+    const { data, headers: { link } } = _data
+    return { data, link }
+  }
+  requestFn({ url, parser }, successCb, errorCb)
 }
 
 export const fetchUserData = (userName, dispatchSetUserDetails) => {

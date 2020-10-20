@@ -19,6 +19,8 @@ const store = createStore(
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__() 
 )
 
+console.log('persistedState', persistedState)
+
 // On each state change, save new state into sessionStorage
 store.subscribe(() => {
   saveState(store.getState())

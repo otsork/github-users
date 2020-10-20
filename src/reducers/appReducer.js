@@ -18,6 +18,7 @@ const appReducer = (state = initialState, action) => {
   switch(action.type) {
     case STORE_PAGE: {
       const { pageNumber, data, paginationLinks } = payload
+      console.log(payload)
 
       return {
         ...state,
