@@ -1,10 +1,8 @@
 import React from 'react'
-import parseLinkHeader from 'parse-link-header'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { Button } from '@material-ui/core'
 
-// import actions from '../../actions'
 import { fetchTableData } from '../../requests/requests'
 
 
@@ -28,19 +26,19 @@ const Navigation = (props) => {
   // hooks
   const classes = useStyles()
 
-  console.log(paginationLinks)
   const goToNextPage = (pageNumber) => {
     if (pageIsStored(pageNumber)) goToStoredPage(pageNumber)
     else {
-      fetchTableData(paginationLinks.next.url, (response) => {  
-        const { data, headers: { link } } = response
-        dispatchStorePage(pageNumber, data, parseLinkHeader(link))
+      fetchTableData(paginationLinks.next.url, ({ data, links }) => {
+        dispatchStorePage(pageNumber, data, links)
       })
     }
   }
 
   const goToLastPage = () => {
-    fetchTableData(paginationLinks.last.url, undefined, dispatchStorePage)
+    fetchTableData(paginationLinks.last.url, ({ data, links }) => {
+      dispatchStorePage(undefined, data, links)
+    })
   }
 
   console.log(paginationLinks)

@@ -12,11 +12,7 @@ export const fetchTableData2 = (url, pageNumber, dispatchStorePage) => {
 }
 
 export const fetchTableData = (url, successCb, errorCb) => {
-  const parser =  (_data) => {
-    const { data, headers: { link } } = _data
-    return { data, link }
-  }
-  requestFn({ url, parser }, successCb, errorCb)
+  requestFn({ url }, successCb, errorCb)
 }
 
 export const fetchUserData = (userName, dispatchSetUserDetails) => {

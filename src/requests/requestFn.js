@@ -1,4 +1,5 @@
 import Axios from 'axios'
+import parseLinkHeader from 'parse-link-header'
 
 const baseURL = 'https://api.github.com'
 
@@ -16,17 +17,13 @@ class Request {
 
     this.config = {
       ...baseConfig,
-      ...args.config
+      ...args.config,
     }
 
     this.successCb = (response) => {
-      // console.log(response)
-      const parsedResponse = this.config.parser && this.config.parser(response)
-      const _response = this.config.parser ? parsedResponse : response
-      // console.log(parsedResponse)
-      if (args.successCb) args.successCb(_response)
-      args.resolve(_response)
-      return _response
+      if (args.successCb) args.successCb(Request.getParser(response))
+      args.resolve(Request.getParser(response))
+      return Request.getParser(response)
     }
 
     this.errorCb = (error) => {
@@ -36,9 +33,19 @@ class Request {
     }
   }
 
+  static hasHeaderLinks = (response) => Boolean(response.headers && response.headers.link)
+  static getParser = (response) => {
+    switch(true) {
+      case Request.hasHeaderLinks(response): {
+        const { data, headers: { link } } = response
+        return { data, links: parseLinkHeader(link) }
+      }
+      default:
+        return response => response
+    }
+  }
+
   async send() {
-    
-    console.log(this.config.url)
     try {
       const response = await Axios(this.config)
       this.successCb(response)
